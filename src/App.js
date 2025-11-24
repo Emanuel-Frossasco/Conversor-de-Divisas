@@ -23,12 +23,10 @@ function App() {
     { code: 'JPY', name: 'Yen', symbol: '¥' }
   ];
 
-  // Cargar historial y tasas guardadas del localStorage al inicio
   useEffect(() => {
     loadFromStorage();
   }, []);
 
-  // Cargar datos del localStorage
   const loadFromStorage = () => {
     try {
       const savedHistory = localStorage.getItem('converter-history');
@@ -47,7 +45,6 @@ function App() {
     }
   };
 
-  // Guardar en localStorage
   const saveToStorage = (key, value) => {
     try {
       localStorage.setItem(key, JSON.stringify(value));
@@ -56,25 +53,20 @@ function App() {
     }
   };
 
-  // Obtener tasas de cambio
   const fetchRates = async () => {
     setLoading(true);
     setError(null);
     try {
       const response = await fetch('https://open.er-api.com/v6/latest/ARS');
-
       if (!response.ok) {
         throw new Error('Error al obtener tasas');
       }
-
       const data = await response.json();
-
       if (data.result === 'success') {
         setRates(data.rates);
         const now = new Date().toISOString();
         setLastUpdate(now);
         setIsOnline(true);
-
         saveToStorage('converter-rates', {
           rates: data.rates,
           timestamp: now
@@ -91,22 +83,17 @@ function App() {
     }
   };
 
-  // Cargar tasas al montar componente
   useEffect(() => {
     if (!rates) {
       fetchRates();
     }
   }, []);
 
-  // Convertir moneda
   const convertCurrency = () => {
     if (!rates || !amount) return;
-
     const numAmount = parseFloat(amount);
     if (isNaN(numAmount)) return;
-
     let convertedAmount;
-
     if (fromCurrency === 'ARS') {
       convertedAmount = numAmount * rates[toCurrency];
     } else if (toCurrency === 'ARS') {
@@ -115,9 +102,7 @@ function App() {
       const toARS = numAmount / rates[fromCurrency];
       convertedAmount = toARS * rates[toCurrency];
     }
-
     setResult(convertedAmount);
-
     const newEntry = {
       id: Date.now(),
       from: fromCurrency,
@@ -126,26 +111,22 @@ function App() {
       result: convertedAmount,
       timestamp: new Date().toISOString()
     };
-
     const newHistory = [newEntry, ...history].slice(0, 20);
     setHistory(newHistory);
     saveToStorage('converter-history', newHistory);
   };
 
-  // Intercambiar monedas
   const swapCurrencies = () => {
     setFromCurrency(toCurrency);
     setToCurrency(fromCurrency);
     setResult(null);
   };
 
-  // Limpiar historial
   const clearHistory = () => {
     setHistory([]);
     localStorage.removeItem('converter-history');
   };
 
-  // Formatear número
   const formatNumber = (num) => {
     return new Intl.NumberFormat('es-AR', {
       minimumFractionDigits: 2,
@@ -153,7 +134,6 @@ function App() {
     }).format(num);
   };
 
-  // Obtener símbolo de moneda
   const getCurrencySymbol = (code) => {
     return currencies.find(c => c.code === code)?.symbol || '';
   };
@@ -161,7 +141,6 @@ function App() {
   return (
     <div className="app-container">
       <div className="content-wrapper">
-        {/* Header */}
         <div className="card header-card">
           <div className="header-top">
             <h1 className="title">Conversor de Divisas</h1>
@@ -196,16 +175,14 @@ function App() {
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                   className="input-amount"
-                  placeholder="Monto"
-                />
+                  placeholder="Monto" />
                 <select
                   value={fromCurrency}
                   onChange={(e) => {
                     setFromCurrency(e.target.value);
                     setResult(null);
                   }}
-                  className="select-currency"
-                >
+                  className="select-currency">
                   {currencies.map(curr => (
                     <option key={curr.code} value={curr.code}>
                       {curr.code} - {curr.name}
@@ -214,14 +191,12 @@ function App() {
                 </select>
               </div>
             </div>
-
             {/* Botón de intercambio */}
             <div className="swap-button-container">
               <button onClick={swapCurrencies} className="swap-button">
                 <ArrowLeftRight />
               </button>
             </div>
-
             {/* Hasta */}
             <div className="input-group">
               <label className="label">Hasta</label>
@@ -231,8 +206,7 @@ function App() {
                   setToCurrency(e.target.value);
                   setResult(null);
                 }}
-                className="select-currency full-width"
-              >
+                className="select-currency full-width">
                 {currencies.map(curr => (
                   <option key={curr.code} value={curr.code}>
                     {curr.code} - {curr.name}
@@ -240,31 +214,26 @@ function App() {
                 ))}
               </select>
             </div>
-
             {/* Botones de acción */}
             <div className="action-buttons">
               <button
                 onClick={convertCurrency}
                 disabled={loading || !rates}
-                className="btn btn-primary"
-              >
+                className="btn btn-primary">
                 Convertir
               </button>
               <button
                 onClick={fetchRates}
                 disabled={loading}
-                className="btn btn-success"
-              >
+                className="btn btn-success">
                 <RefreshCw className={loading ? 'spin' : ''} size={20} />
               </button>
               <button
                 onClick={() => setShowHistory(!showHistory)}
-                className="btn btn-purple"
-              >
+                className="btn btn-purple">
                 <History size={20} />
               </button>
             </div>
-
             {/* Resultado */}
             {result !== null && (
               <div className="result-box">
@@ -276,7 +245,6 @@ function App() {
             )}
           </div>
         </div>
-
         {/* Historial */}
         {showHistory && (
           <div className="card history-card">
@@ -289,7 +257,6 @@ function App() {
                 Limpiar todo
               </button>
             </div>
-
             {history.length === 0 ? (
               <p className="empty-history">No hay conversiones registradas</p>
             ) : (
@@ -312,7 +279,6 @@ function App() {
             )}
           </div>
         )}
-
         {/* Info sobre tasas */}
         {rates && (
           <div className="card rates-card">
